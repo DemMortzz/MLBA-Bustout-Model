@@ -85,7 +85,7 @@ Instead of optimizing for abstract metrics like Accuracy, the final model is tun
 ## 📂 Project Structure
 
 ```text
-├── fraud_detection.ipynb       # End-to-end pipeline (Preprocessing -> Optuna -> Financial Analysis)
+├── model.ipynb       # End-to-end pipeline (Preprocessing -> Optuna -> Financial Analysis)
 ├── requirements.txt            # Python dependencies
 ├── README.md                   # Project documentation
 ├── /data                       # Data folder (Excluded from repo)

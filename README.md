@@ -85,15 +85,15 @@ Instead of optimizing for abstract metrics like Accuracy, the final model is tun
 ## 📂 Project Structure
 
 ```text
-├── model.ipynb       # End-to-end pipeline (Preprocessing -> Optuna -> Financial Analysis)
-├── requirements.txt            # Python dependencies
-├── README.md                   # Project documentation
-├── /data                       # Data folder (Excluded from repo)
-├── /models                     # Serialized models
-│   └── lightgbm_final.pkl      # Optimized model artifact
-└── /outputs                    # Generated plots
-    ├── profit_analysis.png     # Net Savings vs Threshold curve
-    └── feature_importance.png  # Top behavioral features
+├── trying_something github ver.ipynb  # Main pipeline: Preprocessing, Feature Engineering, Optuna Tuning, & Financial Analysis
+├── requirements.txt                   # List of Python dependencies
+├── README.md                          # Project documentation
+├── LICENSE                            # License for the project
+├── .gitignore                         # Specifies intentionally untracked files
+├── lightgbm_final_tuned_model.pkl     # Serialized, optimized LightGBM model artifact
+├── profit_loss_analysis.png           # Visualization of Net Savings vs. Risk Threshold
+├── feature_importance.png             # Chart showing the top predictive behavioral features
+└── *.parquet                          # Dataset files (Original data, Engineered features, and Train/Val/Test splits)
 ```
 
 ```

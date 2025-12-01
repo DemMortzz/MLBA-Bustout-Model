@@ -1,88 +1,100 @@
-Bust-Out Fraud Detection using Machine Learning
+````markdown
+# Bust-Out Fraud Detection using Cost-Sensitive Machine Learning
 
-This project focuses on detecting bust-out scams, a type of financial fraud where fraudsters build positive credit history through regular transactions and then “bust out” by maxing their credit line with no intention of repayment.
+## 📌 Project Overview
+This project targets **Bust-Out Fraud** (also known as First-Party Fraud), a scheme where fraudsters cultivate a positive credit history through regular transactions before suddenly "busting out" by maxing their credit lines with no intention of repayment.
 
-The solution uses LightGBM with behavioral and temporal feature engineering to improve early fraud detection performance beyond rule-based systems.
+Unlike traditional binary classifiers that optimize for accuracy, this solution implements a **Cost-Sensitive Learning** framework. It prioritizes financial impact over raw probability by employing an **Expected Loss Strategy**, ensuring that investigator resources are focused solely on high-value, high-risk transactions.
 
-Environment Setup
+## 🚀 Key Features
+* **Behavioral Feature Engineering:** Velocity tracking (7-day/30-day rolling sums) to catch the "acceleration" phase of bust-out behavior.
+* **Cyclical Temporal Encoding:** Transformation of `Hour` and `Month` into Sine/Cosine features to preserve temporal continuity.
+* **Leakage Prevention:** Explicit removal of longitudinal features (e.g., `Year`) to prevent overfitting to historical inflation or time-drift.
+* **Financial Threshold Optimization:** A custom decision engine that calculates net profitability to determine the optimal alert threshold, rather than using arbitrary probability cutoffs.
 
-Clone this repository and install all dependencies:
+## 🛠️ Environment Setup
 
-git clone https://github.com/<your-username>/<your-repo-name>.git
+Clone this repository and install dependencies:
+
+```bash
+git clone [https://github.com/](https://github.com/)<your-username>/<your-repo-name>.git
 cd <your-repo-name>
 pip install -r requirements.txt
+````
 
+**Note:** This project relies on `.parquet` files for efficient data handling. Ensure you have `pyarrow` or `fastparquet` installed.
 
-Alternatively, if using Google Colab, run:
+## 📦 Dependencies
 
-!pip install -r requirements.txt
+| Library | Purpose |
+| :--- | :--- |
+| **pandas** | Data manipulation and rolling window feature generation |
+| **numpy** | Numerical operations and cyclical encoding |
+| **lightgbm** | Gradient boosting classifier (optimized for imbalance) |
+| **optuna** | Bayesian hyperparameter optimization |
+| **scikit-learn** | Precision-Recall curves and evaluation metrics |
+| **joblib** | Model serialization |
+| **pyarrow** | High-performance Parquet file I/O |
+| **matplotlib/seaborn** | Visualization of Profit Curves and Feature Importance |
 
-Dependencies
+## 🔄 How to Reproduce
 
-This project was developed using Python 3.10+.
-Below are the main dependencies required:
+1.  **Data Loading:**
+    Ensure your dataset is in Parquet format. Update paths if not using Google Drive.
 
-Library	Purpose
-pandas	Data manipulation and aggregation
-numpy	Numerical operations
-matplotlib	Visualizations and feature importance plots
-scikit-learn	Model evaluation, metrics, and utility functions
-lightgbm	Gradient boosting classifier for fraud detection
-optuna	Hyperparameter optimization
-joblib	Saving and loading trained models
-pyarrow	For efficient .parquet file handling
-tqdm (optional)	Progress tracking
-seaborn (optional)	Enhanced visualizations
-Example requirements.txt
-pandas>=2.0.0
-numpy>=1.23.0
-matplotlib>=3.7.0
-scikit-learn>=1.3.0
-lightgbm>=4.1.0
-optuna>=3.5.0
-joblib>=1.3.0
-pyarrow>=14.0.0
-tqdm>=4.66.0
-seaborn>=0.13.0
+    ```python
+    df = pd.read_parquet("path/to/fraud_user_time_downsampled.parquet")
+    ```
 
-How to Reproduce
+2.  **Feature Engineering:**
+    Run the preprocessing pipeline to generate velocity features and apply cyclical encoding. **Crucial:** Ensure the `Year` column is dropped before training.
 
-Mount your Google Drive and load the dataset:
+3.  **Optimization:**
+    Run the Optuna study to find the best hyperparameters for `scale_pos_weight` and tree depth.
 
-df = pd.read_parquet("/content/drive/MyDrive/mlba project/fraud_user_time_downsampled.parquet")
+4.  **Financial Analysis (The Core Logic):**
+    The notebook calculates the **Net Savings** curve:
+    $$ \text{Savings} = \sum (\text{Caught Fraud Amount}) - (\text{Alerts} \times \text{Admin Cost}) $$
 
+5.  **Inference:**
+    Run the final screener which flags transactions based on Risk Score:
+    `Risk Score = Probability × Transaction Amount`
 
-Run the data split and feature engineering scripts.
+## 📊 Model & Results
 
-Train the model using the tuned hyperparameters.
+### Model Configuration
 
-Evaluate performance (Precision-Recall AUC, F1 threshold).
+  * **Algorithm:** LightGBM Classifier
+  * **Tuning:** Optuna (Bayesian Optimization)
+  * **Objective:** Maximize Precision-Recall AUC (initially), optimized for Net Profit (final).
 
-Save the final model:
+### Financial Performance (Test Set)
 
-joblib.dump(final_model, "/content/drive/MyDrive/mlba project/lightgbm_final_tuned_model.pkl")
+Instead of optimizing for abstract metrics like Accuracy, the final model is tuned for **Profitability**.
 
-Model Overview
+| Metric | Result |
+| :--- | :--- |
+| **Optimal Risk Threshold** | **$86.53** (Prob × Amount) |
+| **Projected Net Savings** | **~$8,000** (vs doing nothing) |
+| **Workload** | Top **0.9%** of transactions flagged |
+| **Precision** | **63.5%** (High confidence alerts) |
+| **Recall** | **41.6%** (Captures the highest value fraud) |
 
-Algorithm: LightGBM (Gradient Boosted Trees)
+*Note: While Recall seems low (41.6%), the model successfully ignores low-value fraud (e.g., $5) that costs more to investigate than the loss itself.*
 
-Features: Temporal and behavioral (rolling sums, merchant diversity, transaction gaps)
+## 📂 Project Structure
 
-Metrics: Precision-Recall AUC, F1-score, Precision, Recall
+```text
+├── fraud_detection.ipynb       # End-to-end pipeline (Preprocessing -> Optuna -> Financial Analysis)
+├── requirements.txt            # Python dependencies
+├── README.md                   # Project documentation
+├── /data                       # Data folder (Excluded from repo)
+├── /models                     # Serialized models
+│   └── lightgbm_final.pkl      # Optimized model artifact
+└── /outputs                    # Generated plots
+    ├── profit_analysis.png     # Net Savings vs Threshold curve
+    └── feature_importance.png  # Top behavioral features
+```
 
-Goal: Detect early bust-out frauds with higher recall and explainability
-
- Project Structure
-├── fraud_detection.ipynb           # Main Colab notebook
-├── requirements.txt                # Dependency list
-├── README.md                       # Project documentation
-├── /data                           # Input parquet files (not pushed to GitHub)
-├── /models                         # Saved model files (.pkl)
-└── /outputs                        # Evaluation metrics & visualizations
-
- Results Summary
-Metric	Score
-Precision-Recall AUC	~0.60
-F1-Score	~0.55
-Accuracy	~0.98
-Recall	~0.51
+```
+```
